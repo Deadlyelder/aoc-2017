@@ -9,7 +9,15 @@ pub fn parse(input: &str, offset: usize) -> Option<u32> {
         return None;
     }
     // Contains the "list" of numbers
-    let vector_of_number = input.chars().map(|x| x.to_digit(10).expect(&format!("Character {} can be parsed as u32 type", x))).collect::<Vec<u32>>();
+    let vector_of_number = input
+        .chars()
+        .map(|x| {
+            x.to_digit(10).expect(&format!(
+                "Character {} can be parsed as u32 type",
+                x
+            ))
+        })
+        .collect::<Vec<u32>>();
     let mut sum_vector = 0;
     for (index, number) in vector_of_number.iter().enumerate() {
         let compare_number = vector_of_number[(index + offset) % input_len];
@@ -21,26 +29,35 @@ pub fn parse(input: &str, offset: usize) -> Option<u32> {
 }
 
 fn main() {
-
     // Get the arguments
-    let args = env::args();
+    let mut args = env::args();
+    let len_args = args.len();
 
     // If the length of the list is greater/lower than 2, exit
-    if args.len() != 2 {
-        writeln!(io::stdout(), "Please to provide only one argument: the number to parse!").unwrap();
+    if len_args != 3 {
+        writeln!(
+            io::stdout(),
+            "Please to provide two arguments: the input string, and the offset (-1 for halfway behavior)!\nFor example:\t`cargo run -- 1221 1`, or `cargo run -- 1221 -1`"
+        ).unwrap();
         process::exit(1);
     }
 
-    let input = args.last().unwrap();
-    let input = input.as_str();
-    let offset: usize = input.len() / 2;
+    let input = String::from(args.nth(1).unwrap());
+    let offset = args.last().unwrap().parse::<usize>().unwrap_or(
+        input.len() / 2,
+    );
 
     // Return the result
-    match parse(input, offset) {
+    match parse(&input, offset) {
         Some(value) => println!("{}", value),
-        None => process::exit(1),
+        None => {
+            writeln!(
+                io::stdout(),
+                "It seems there was a problem using the custom offset... :-/"
+            ).unwrap();
+            process::exit(1)
+        }
     }
-
 }
 
 #[cfg(test)]
